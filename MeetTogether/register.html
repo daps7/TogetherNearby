@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Together Nearby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container page-shell">
+    <header class="topbar">
+        <div class="brand">Together Nearby</div>
+        <nav class="home-menu-wrap">
+            <button class="home-menu-button" type="button" aria-expanded="false" aria-controls="homeMenu"><span aria-hidden="true">⌂</span> Home menu</button>
+            <div class="home-menu" id="homeMenu">
+                <a href="SplashPage.html">Home</a>
+                <a href="settings.html">Settings</a>
+                <a href="friends.html">Friends</a>
+                <a href="profile.html">Profile</a>
+                <a href="favourites.html">Favourites</a>
+                <a href="login.html">Log in</a>
+            </div>
+        </nav>
+    </header>
+    <main class="simple-page narrow-page">
+        <h1>Register</h1>
+        <p class="subtitle">Create your Together Nearby account.</p>
+        <form id="registerForm" class="simple-form">
+            <label for="registerName">Your name</label>
+            <input id="registerName" type="text" autocomplete="name" required>
+            <label for="registerEmail">Email address</label>
+            <input id="registerEmail" type="email" autocomplete="email" required>
+            <button class="add-btn" type="submit">Create account</button>
+        </form>
+        <p class="helper-text">Already have an account? <a href="login.html">Log in here</a>.</p>
+        <p class="helper-text">This demo saves your details only in this browser.</p>
+    </main>
+</div>
+<script src="database.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Together Nearby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container page-shell">
+    <header class="topbar"><div class="brand">Together Nearby</div><nav class="home-menu-wrap"><button class="home-menu-button" type="button" aria-expanded="false" aria-controls="homeMenu"><span aria-hidden="true">⌂</span> Home menu</button><div class="home-menu" id="homeMenu"><a href="SplashPage.html">Home</a><a href="settings.html">Settings</a><a href="friends.html">Friends</a><a href="favourites.html">Favourites</a><a href="login.html">Log in</a></div></nav></header>
+    <main class="simple-page narrow-page"><h1>Profile</h1><p class="subtitle">Change the name and email saved for you.</p><form id="profileForm" class="simple-form"><label for="profileName">Your name</label><input id="profileName" type="text" autocomplete="name" required><label for="profileEmail">Email address</label><input id="profileEmail" type="email" autocomplete="email" required><button class="add-btn" type="submit">Save profile</button></form><p id="profileMessage" class="add-message" aria-live="polite"></p><h2 class="section-heading">Events I created</h2><section id="createdEventsList" class="data-list" aria-live="polite"></section></main>
+</div>
+<script src="database.js"></script><script src="script.js"></script>
+</body>
+</html>

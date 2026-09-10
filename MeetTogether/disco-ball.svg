@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" role="img" aria-labelledby="title desc">
+  <title id="title">Gold disco ball</title>
+  <desc id="desc">A gold line-art disco ball with small glints.</desc>
+  <g fill="none" stroke="#B08D57" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M120 10v30M103 40h34l-4 12h-26z"/>
+    <path d="M120 52v12"/>
+    <circle cx="120" cy="145" r="78"/>
+    <path d="M42 145h156M52 112h136M52 178h136M70 82h100M70 208h100"/>
+    <path d="M120 67c-25 22-38 49-38 78s13 56 38 78M120 67c25 22 38 49 38 78s-13 56-38 78M120 67c-8 23-12 49-12 78s4 55 12 78M120 67c8 23 12 49 12 78s-4 55-12 78"/>
+    <path d="M72 78c-14 20-22 42-22 67s8 47 22 67M168 78c14 20 22 42 22 67s-8 47-22 67"/>
+    <path d="M44 244h152" stroke-dasharray="5 8"/>
+    <path d="M25 92v20M15 102h20M207 72v20M197 82h20M211 213v20M201 223h20"/>
+  </g>
+</svg>

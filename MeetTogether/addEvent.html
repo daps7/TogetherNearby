@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Event - Together Nearby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header class="topbar">
+        <div class="brand">Together Nearby</div>
+        <nav class="home-menu-wrap">
+            <button class="home-menu-button" type="button" aria-expanded="false" aria-controls="homeMenu"><span aria-hidden="true">⌂</span> Home menu</button>
+            <div class="home-menu" id="homeMenu">
+                <a href="SplashPage.html">Home</a>
+                <a href="settings.html">Settings</a>
+                <a href="friends.html">Friends</a>
+                <a href="profile.html">Profile</a>
+                <a href="favourites.html">Favourites</a>
+                <a href="login.html">Log in</a>
+            </div>
+        </nav>
+    </header>
+    <h1>Add Event</h1>
+    <p class="subtitle">Create a new activity for others to join</p>
+
+    <main style="max-width:600px;margin:20px auto;text-align:left;">
+        <form id="addEventForm" novalidate>
+            <label for="eventTitle">Title</label>
+            <input id="eventTitle" type="text" required aria-required="true">
+            <p class="field-error" id="eventTitleError">Field is required.</p>
+
+            <label for="eventDescription">Description</label>
+            <textarea id="eventDescription" rows="4" required aria-required="true"></textarea>
+            <p class="field-error" id="eventDescriptionError">Field is required.</p>
+
+            <label for="eventLocation">Location</label>
+            <input id="eventLocation" type="text" required aria-required="true">
+            <p class="field-error" id="eventLocationError">Field is required.</p>
+
+            <label for="eventDate">Date</label>
+            <input id="eventDate" type="date" required aria-required="true">
+            <p class="field-error" id="eventDateError">Field is required.</p>
+
+            <label for="eventTime">Time</label>
+            <input id="eventTime" type="text" inputmode="numeric" placeholder="HH:MM or HH.MM" maxlength="5" pattern="(?:[01]\d|2[0-3])[:.][0-5]\d" required aria-required="true">
+            <p class="field-error" id="eventTimeError">Field is required.</p>
+
+                <label for="eventEmoji">Emoji</label>
+                <input id="eventEmoji" type="hidden" value="">
+                <div class="emoji-picker" id="emojiPicker" aria-label="Choose an emoji">
+                    <button type="button" class="emoji-option" data-emoji="☕">☕</button>
+                    <button type="button" class="emoji-option" data-emoji="🚶">🚶</button>
+                    <button type="button" class="emoji-option" data-emoji="♟️">♟️</button>
+                    <button type="button" class="emoji-option" data-emoji="🏛️">🏛️</button>
+                    <button type="button" class="emoji-option" data-emoji="🧘">🧘</button>
+                    <button type="button" class="emoji-option" data-emoji="🎨">🎨</button>
+                    <button type="button" class="emoji-option" data-emoji="🎲">🎲</button>
+                    <button type="button" class="emoji-option" data-emoji="🧑‍🍳">🧑‍🍳</button>
+                    <button type="button" class="emoji-option" data-emoji="🎵">🎵</button>
+                    <button type="button" class="emoji-option" data-emoji="⚽">⚽</button>
+                    <button type="button" class="emoji-option" data-emoji="🎾">🎾</button>
+                    <button type="button" class="emoji-option" data-emoji="🏀">🏀</button>
+                    <button type="button" class="emoji-option" data-emoji="🏈">🏈</button>
+                    <button type="button" class="emoji-option" data-emoji="🏐">🏐</button>
+                    <button type="button" class="emoji-option" data-emoji="🏸">🏸</button>
+                    <button type="button" class="emoji-option" data-emoji="🏓">🏓</button>
+                    <button type="button" class="emoji-option" data-emoji="🏊">🏊</button>
+                    <button type="button" class="emoji-option" data-emoji="🚴">🚴</button>
+                    <button type="button" class="emoji-option" data-emoji="🥾">🥾</button>
+                    <button type="button" class="emoji-option" data-emoji="🎭">🎭</button>
+                    <button type="button" class="emoji-option" data-emoji="🎬">🎬</button>
+                    <button type="button" class="emoji-clear">Clear</button>
+                </div>
+
+            <button class="add-btn" type="submit">Save and Return</button>
+        </form>
+
+        <p id="addMessage" class="add-message" aria-live="polite"></p>
+    </main>
+
+</div>
+
+<script src="database.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

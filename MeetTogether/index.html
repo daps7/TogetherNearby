@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Together Nearby</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header class="topbar">
+        <div class="brand">Together Nearby</div>
+        <nav class="home-menu-wrap">
+            <button class="home-menu-button" type="button" aria-expanded="false" aria-controls="homeMenu"><span aria-hidden="true">⌂</span> Home menu</button>
+            <div class="home-menu" id="homeMenu">
+                <a href="SplashPage.html">Home</a>
+                <a href="settings.html">Settings</a>
+                <a href="friends.html">Friends</a>
+                <a href="profile.html">Profile</a>
+                <a href="favourites.html">Favourites</a>
+                <a href="login.html">Log in</a>
+            </div>
+        </nav>
+    </header>
+    <p class="subtitle">Meet people through activities</p>
+    <main class="main">
+            <div class="card">
+                <div class="card-header">
+                    <span id="activityEmoji" class="emoji">☕</span>
+                    <h2 id="title">Coffee Morning</h2>
+                </div>
+
+                <p id="description">
+                    Enjoy coffee and conversation with friendly local people.
+                </p>
+
+                <p id="location">📍 Community Café</p>
+
+                <p id="date">🕙 Tuesday 10:00 AM</p>
+
+                <p id="organizer" class="event-organizer"></p>
+
+            </div>
+
+            <div class="buttons">
+
+                <button class="skip" onclick="skipActivity()">
+                    Skip
+                </button>
+
+                <button class="like" onclick="likeActivity()">
+                    ❤️ Interested
+                </button>
+
+            </div>
+</main>
+</div>
+
+<script src="database.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
