@@ -13,15 +13,20 @@
         <h1>Chat rooms</h1>
         <p class="subtitle">Talk with people interested in the same events.</p>
         <div class="chat-layout">
-            <aside class="chat-rooms-panel"><h2>Your rooms</h2><section id="chatRoomList" class="chat-room-list" aria-label="Your chat rooms"></section></aside>
+            <aside class="chat-rooms-panel"><h2>Your rooms</h2><section id="chatRoomList" class="chat-room-list" aria-label="Your chat rooms"></section><h2 class="direct-heading">My event chats</h2><section id="myEventChatList" class="chat-room-list" aria-label="Chats for my events"></section><h2 class="direct-heading">Direct messages</h2><section id="directFriendList" class="chat-room-list" aria-label="Direct message friends"></section></aside>
             <section class="chat-window" aria-live="polite">
                 <h2 id="chatRoomTitle">Choose a chat room</h2>
                 <div id="chatRoomMeta" class="chat-room-meta"></div>
                 <div id="chatMessages" class="chat-messages"></div>
                 <form id="chatForm" class="chat-form">
                     <label class="visually-hidden" for="chatMessageInput">Message</label>
-                    <input id="chatMessageInput" type="text" placeholder="Write a message..." autocomplete="off" maxlength="500" required>
-                    <button class="add-btn" type="submit">Send</button>
+                    <input id="chatMessageInput" type="text" placeholder="Message" autocomplete="off" maxlength="500" required>
+                    <button class="add-btn" type="submit">Send message</button>
+                </form>
+                <form id="directMessageForm" class="chat-form" hidden>
+                    <label class="visually-hidden" for="directMessageInput">Direct message</label>
+                    <input id="directMessageInput" type="text" placeholder="Message" autocomplete="off" maxlength="500" required>
+                    <button class="add-btn" type="submit">Send message</button>
                 </form>
             </section>
         </div>

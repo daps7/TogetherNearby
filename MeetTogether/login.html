@@ -25,6 +25,9 @@
             <input id="loginName" type="text" autocomplete="name" required>
             <label for="loginEmail">Email address</label>
             <input id="loginEmail" type="email" autocomplete="email" required>
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" minlength="8" required>
+            <p id="loginMessage" class="field-error" aria-live="polite"></p>
             <button class="add-btn" type="submit">Log in</button>
         </form>
         <p class="helper-text">New here? <a href="register.html">Register here</a>.</p>

@@ -32,6 +32,11 @@
             <input id="registerEmail" type="email" autocomplete="email" required>
             <label for="registerPhone">Phone number</label>
             <input id="registerPhone" type="tel" autocomplete="tel" required>
+            <label for="registerPassword">Password</label>
+            <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>
+            <label for="registerPasswordConfirm">Confirm password</label>
+            <input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+            <p id="registerMessage" class="field-error" aria-live="polite"></p>
             <button class="add-btn" type="submit">Create account</button>
         </form>
         <p class="helper-text">Already have an account? <a href="login.html">Log in here</a>.</p>

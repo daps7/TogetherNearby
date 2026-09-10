@@ -26,6 +26,23 @@
         </nav>
     </header>
     <p class="subtitle">Meet people through activities</p>
+    <section class="event-filters" aria-label="Filter activities">
+        <label for="eventSearch">Search</label>
+        <input id="eventSearch" type="search" placeholder="Search activities, places, or details">
+        <label for="eventDateFilter">Date</label>
+        <input id="eventDateFilter" type="date">
+        <label for="eventCategoryFilter">Category</label>
+        <select id="eventCategoryFilter">
+            <option value="">All categories</option>
+            <option value="social">Social</option>
+            <option value="sports">Sports</option>
+            <option value="arts">Arts and culture</option>
+            <option value="music">Music and dance</option>
+            <option value="outdoors">Outdoors</option>
+            <option value="games">Games</option>
+        </select>
+        <button id="clearEventFilters" class="btn-outline" type="button">Clear filters</button>
+    </section>
     <main class="main">
             <div class="card">
                 <div class="card-header">

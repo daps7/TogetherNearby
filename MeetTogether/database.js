@@ -70,6 +70,7 @@ const MeetTogetherDB = (() => {
         ],
         interests: [],
         chatRooms: [],
+        directMessages: [],
         reviews: [],
         friendships: [
             { id: 'friendship-demo-alex', userId: currentUserId, friendId: 'user-friend-1', status: 'accepted' }
@@ -80,6 +81,13 @@ const MeetTogetherDB = (() => {
         return JSON.parse(JSON.stringify(value));
     }
 
+    function publicUser(user) {
+        if (!user) return user;
+        const safeUser = clone(user);
+        delete safeUser.passwordHash;
+        return safeUser;
+    }
+
     function read() {
         try {
             const stored = JSON.parse(localStorage.getItem(storageKey));
@@ -88,6 +96,7 @@ const MeetTogetherDB = (() => {
                 stored.users.forEach(user => { user.phone = user.phone || ''; user.premium = user.premium === true; });
                 stored.interests = Array.isArray(stored.interests) ? stored.interests : [];
                 stored.chatRooms = Array.isArray(stored.chatRooms) ? stored.chatRooms : [];
+                stored.directMessages = Array.isArray(stored.directMessages) ? stored.directMessages : [];
                 stored.reviews = Array.isArray(stored.reviews) ? stored.reviews : [];
                 stored.friendships = Array.isArray(stored.friendships) ? stored.friendships : [];
                 seedData.users.forEach(user => {
@@ -140,7 +149,7 @@ const MeetTogetherDB = (() => {
 
     function getCurrentUser() {
         const data = read();
-        return clone(data.users.find(user => user.id === data.currentUserId));
+        return publicUser(data.users.find(user => user.id === data.currentUserId));
     }
 
     function isAuthenticated() {
@@ -148,31 +157,67 @@ const MeetTogetherDB = (() => {
         return localStorage.getItem('meetTogetherAuthenticated') === 'true' || data.currentUserId !== currentUserId;
     }
 
+    function logout() {
+        const data = read();
+        data.currentUserId = currentUserId;
+        localStorage.removeItem('meetTogetherAuthenticated');
+        write(data);
+    }
+
     function getUsers() {
-        return clone(read().users);
+        return read().users.map(publicUser);
     }
 
     function getUser(userId) {
-        return clone(read().users.find(user => user.id === userId));
+        return publicUser(read().users.find(user => user.id === userId));
     }
 
-    function login(name, email, phone = '') {
+    async function hashPassword(password) {
+        const encodedPassword = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', encodedPassword);
+        return Array.from(new Uint8Array(hashBuffer), byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function login(name, email, password) {
         const data = read();
         const normalizedEmail = email.trim().toLowerCase();
-        let user = data.users.find(item => item.email.toLowerCase() === normalizedEmail);
+        const user = data.users.find(item => item.email.toLowerCase() === normalizedEmail);
+        if (!user) return { user: null, error: 'invalid' };
+        const passwordHash = await hashPassword(password);
 
-        if (!user) {
-            user = { id: createId('user'), name: name.trim() || 'New User', email: normalizedEmail, phone: phone.trim(), premium: false };
-            data.users.push(user);
-        } else if (name.trim()) {
-            user.name = name.trim();
-            if (phone.trim()) user.phone = phone.trim();
+        if (user.passwordHash && user.passwordHash !== passwordHash) {
+            return { user: null, error: 'invalid' };
         }
+        if (!user.passwordHash) {
+            user.passwordHash = passwordHash;
+        }
+        if (name.trim()) user.name = name.trim();
 
         data.currentUserId = user.id;
         localStorage.setItem('meetTogetherAuthenticated', 'true');
         write(data);
-        return clone(user);
+        return { user: publicUser(user), error: null };
+    }
+
+    async function register(name, email, phone, password) {
+        const data = read();
+        const normalizedEmail = email.trim().toLowerCase();
+        if (data.users.some(user => user.email.toLowerCase() === normalizedEmail)) {
+            return { user: null, error: 'exists' };
+        }
+        const user = {
+            id: createId('user'),
+            name: name.trim() || 'New User',
+            email: normalizedEmail,
+            phone: phone.trim(),
+            passwordHash: await hashPassword(password),
+            premium: false
+        };
+        data.users.push(user);
+        data.currentUserId = user.id;
+        localStorage.setItem('meetTogetherAuthenticated', 'true');
+        write(data);
+        return { user: publicUser(user), error: null };
     }
 
     function updateProfile(profileDetails) {
@@ -184,7 +229,7 @@ const MeetTogetherDB = (() => {
             user.phone = profileDetails.phone ? profileDetails.phone.trim() : user.phone || '';
             write(data);
         }
-        return clone(user);
+        return publicUser(user);
     }
 
     function setPremium(enabled) {
@@ -195,7 +240,7 @@ const MeetTogetherDB = (() => {
             user.premium = enabled === true;
             write(data);
         }
-        return clone(user);
+        return publicUser(user);
     }
 
     function getEvents() {
@@ -299,6 +344,33 @@ const MeetTogetherDB = (() => {
         return clone(data.chatRooms.filter(room => room.members.includes(userId) && eventIds.includes(room.eventId)));
     }
 
+    function getMyEventChatRooms(userId = read().currentUserId) {
+        const data = read();
+        const ownedEvents = data.events.filter(event => event.creatorId === userId);
+        let changed = false;
+        const rooms = ownedEvents.map(event => {
+            let room = data.chatRooms.find(item => item.eventId === event.id);
+            if (!room) {
+                room = {
+                    id: createId('chat-room'),
+                    eventId: event.id,
+                    name: `${event.title} chat`,
+                    members: [],
+                    messages: []
+                };
+                data.chatRooms.push(room);
+                changed = true;
+            }
+            if (!room.members.includes(userId)) {
+                room.members.push(userId);
+                changed = true;
+            }
+            return room;
+        });
+        if (changed) write(data);
+        return clone(rooms);
+    }
+
     function getChatRoom(roomId) {
         return clone(read().chatRooms.find(room => room.id === roomId));
     }
@@ -352,15 +424,20 @@ const MeetTogetherDB = (() => {
 
     function addFriend(friendId) {
         const data = read();
-        const alreadyFriends = data.friendships.some(friendship =>
-            friendship.userId === data.currentUserId && friendship.friendId === friendId
-        );
-        if (!alreadyFriends && friendId !== data.currentUserId) {
-            data.friendships.push({
-                id: createId('friendship'),
-                userId: data.currentUserId,
-                friendId,
-                status: 'accepted'
+        if (friendId !== data.currentUserId && data.users.some(user => user.id === friendId)) {
+            const relationships = [
+                { userId: data.currentUserId, friendId },
+                { userId: friendId, friendId: data.currentUserId }
+            ];
+            relationships.forEach(relationship => {
+                const alreadyFriends = data.friendships.some(friendship =>
+                    friendship.userId === relationship.userId && friendship.friendId === relationship.friendId
+                );
+                if (!alreadyFriends) data.friendships.push({
+                    id: createId('friendship'),
+                    ...relationship,
+                    status: 'accepted'
+                });
             });
             write(data);
         }
@@ -369,9 +446,39 @@ const MeetTogetherDB = (() => {
     function getFriends(userId = read().currentUserId) {
         const data = read();
         const friendIds = data.friendships
-            .filter(friendship => friendship.userId === userId && friendship.status === 'accepted')
-            .map(friendship => friendship.friendId);
-        return clone(data.users.filter(user => friendIds.includes(user.id)));
+            .filter(friendship => (friendship.userId === userId || friendship.friendId === userId) && friendship.status === 'accepted')
+            .map(friendship => friendship.userId === userId ? friendship.friendId : friendship.userId);
+        return data.users.filter(user => friendIds.includes(user.id)).map(publicUser);
+    }
+
+    function areFriends(userId, friendId) {
+        return getFriends(userId).some(user => user.id === friendId);
+    }
+
+    function getDirectMessages(userId, otherUserId) {
+        const data = read();
+        return clone(data.directMessages
+            .filter(message =>
+                (message.senderId === userId && message.recipientId === otherUserId) ||
+                (message.senderId === otherUserId && message.recipientId === userId)
+            )
+            .sort((first, second) => first.createdAt.localeCompare(second.createdAt)));
+    }
+
+    function sendDirectMessage(recipientId, text) {
+        const data = read();
+        const messageText = text.trim();
+        if (!messageText || !data.users.some(user => user.id === recipientId) || !areFriends(data.currentUserId, recipientId)) return null;
+        const message = {
+            id: createId('direct-message'),
+            senderId: data.currentUserId,
+            recipientId,
+            text: messageText,
+            createdAt: new Date().toISOString()
+        };
+        data.directMessages.push(message);
+        write(data);
+        return clone(message);
     }
 
     function getCreatedEvents(userId = read().currentUserId) {
@@ -381,9 +488,11 @@ const MeetTogetherDB = (() => {
     return {
         getCurrentUser,
         isAuthenticated,
+        logout,
         getUsers,
         getUser,
         login,
+        register,
         updateProfile,
         setPremium,
         getEvents,
@@ -393,12 +502,15 @@ const MeetTogetherDB = (() => {
         setInterest,
         getInterestedEvents,
         getChatRooms,
+        getMyEventChatRooms,
         getChatRoom,
         sendChatMessage,
         getReviews,
         addReview,
         addFriend,
         getFriends,
+        getDirectMessages,
+        sendDirectMessage,
         getCreatedEvents
     };
 })();

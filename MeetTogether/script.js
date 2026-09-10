@@ -3,6 +3,49 @@ let current = 0;
 let currentEventId = null;
 const preferencesKey = 'meetTogetherPreferences';
 
+function eventMatchesCategory(event, category){
+    if(!category) return true;
+    const emoji = event.emoji || '';
+    const categories = {
+        social: ['☕', '🚶', '🧘'],
+        sports: ['⚽', '🎾', '🏀', '🏈', '🏐', '🏸', '🏓', '🏊', '🚴', '🥾'],
+        arts: ['♟️', '🏛️', '🎨', '🎭', '🎬'],
+        music: ['🎵', '💃'],
+        outdoors: ['🚶', '🏊', '🚴', '🥾'],
+        games: ['♟️', '🎲']
+    };
+    return categories[category] ? categories[category].some(item => emoji.includes(item)) : true;
+}
+
+function setupEventFilters(){
+    const search = document.getElementById('eventSearch');
+    const date = document.getElementById('eventDateFilter');
+    const category = document.getElementById('eventCategoryFilter');
+    const clear = document.getElementById('clearEventFilters');
+    if(!search || !date || !category || !clear) return;
+
+    function applyFilters(){
+        const query = search.value.trim().toLowerCase();
+        const selectedDate = date.value;
+        activities = MeetTogetherDB.getEvents().filter(event => {
+            const searchableText = [event.title, event.description, event.location, event.date, event.emoji].join(' ').toLowerCase();
+            const matchesQuery = !query || searchableText.includes(query);
+            const matchesDate = !selectedDate || event.dateValue === selectedDate || event.date.includes(selectedDate);
+            return matchesQuery && matchesDate && eventMatchesCategory(event, category.value);
+        });
+        current = 0;
+        loadActivity();
+    }
+
+    [search, date, category].forEach(control => control.addEventListener('input', applyFilters));
+    clear.addEventListener('click', function(){
+        search.value = '';
+        date.value = '';
+        category.value = '';
+        applyFilters();
+    });
+}
+
 function requireAccount(){
     if(MeetTogetherDB.isAuthenticated()) return true;
     const returnPage = `${window.location.pathname.split('/').pop()}${window.location.search}`;
@@ -41,18 +84,15 @@ function savePreferences(preferences){
 function setupPreferences(){
     const preferences = getPreferences();
     const largeTextSetting = document.getElementById('largeTextSetting');
-    const reducedMotionSetting = document.getElementById('reducedMotionSetting');
     const darkModeSetting = document.getElementById('darkModeSetting');
     const premiumSetting = document.getElementById('premiumSetting');
     const speechSetting = document.getElementById('speechSetting');
     const user = MeetTogetherDB.getCurrentUser();
 
     document.body.classList.toggle('large-text', preferences.largeText !== false);
-    document.body.classList.toggle('reduced-motion', preferences.reducedMotion === true);
     document.body.classList.toggle('dark-mode', preferences.darkMode === true);
 
     if(largeTextSetting) largeTextSetting.checked = preferences.largeText !== false;
-    if(reducedMotionSetting) reducedMotionSetting.checked = preferences.reducedMotion === true;
     if(darkModeSetting) darkModeSetting.checked = preferences.darkMode === true;
     if(premiumSetting){
         premiumSetting.checked = Boolean(user && user.premium);
@@ -60,16 +100,14 @@ function setupPreferences(){
     }
     if(speechSetting) speechSetting.value = preferences.speech === true ? 'on' : 'off';
 
-    [largeTextSetting, reducedMotionSetting, darkModeSetting, premiumSetting, speechSetting].forEach(setting => {
+    [largeTextSetting, darkModeSetting, premiumSetting, speechSetting].forEach(setting => {
         if(!setting) return;
         setting.addEventListener('change', function(){
             const updatedPreferences = getPreferences();
             updatedPreferences.largeText = largeTextSetting ? largeTextSetting.checked : document.body.classList.contains('large-text');
-            updatedPreferences.reducedMotion = reducedMotionSetting ? reducedMotionSetting.checked : document.body.classList.contains('reduced-motion');
             updatedPreferences.darkMode = darkModeSetting ? darkModeSetting.checked : document.body.classList.contains('dark-mode');
             updatedPreferences.speech = speechSetting ? speechSetting.value === 'on' : preferences.speech === true;
             document.body.classList.toggle('large-text', updatedPreferences.largeText);
-            document.body.classList.toggle('reduced-motion', updatedPreferences.reducedMotion);
             document.body.classList.toggle('dark-mode', updatedPreferences.darkMode);
             savePreferences(updatedPreferences);
             if(setting === premiumSetting) MeetTogetherDB.setPremium(premiumSetting.checked);
@@ -129,6 +167,29 @@ function setupChatMenuLink(){
     menu.appendChild(link);
 }
 
+function setupLogoutLink(){
+    const menu = document.querySelector('.home-menu');
+    if(!menu || !MeetTogetherDB.isAuthenticated() || menu.querySelector('#logoutLink')) return;
+    const link = document.createElement('a');
+    link.href = '#';
+    link.id = 'logoutLink';
+    link.textContent = 'Log out';
+    link.addEventListener('click', function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        MeetTogetherDB.logout();
+        window.location.href = 'SplashPage.html';
+    });
+    menu.appendChild(link);
+}
+
+function setupAuthenticationVisibility(){
+    if(!MeetTogetherDB.isAuthenticated()) return;
+    document.querySelectorAll('a[href="login.html"], a[href="register.html"]').forEach(link => link.remove());
+    const page = window.location.pathname.split('/').pop().toLowerCase();
+    if(page === 'login.html' || page === 'register.html') window.location.replace('SplashPage.html');
+}
+
 function renderSavedEvents(){
     const list = document.getElementById('savedEventsList');
     if(!list) return;
@@ -145,15 +206,14 @@ function renderFriends(){
     const suggestionsList = document.getElementById('friendSuggestionsList');
     const friends = MeetTogetherDB.getFriends();
     if(list) list.innerHTML = friends.length ? friends.map(friend => `
-        <article class="data-item"><span class="avatar">${friend.name.charAt(0)}</span><div><h2>${friend.name}</h2><p>${friend.email}</p></div></article>`).join('') : '<p class="empty-state">You do not have any friends saved yet.</p>';
+        <article class="data-item"><span class="avatar">${friend.name.charAt(0)}</span><div><h2>${friend.name}</h2><p>${friend.email}</p><div class="person-actions"><a class="small-action" href="organizer-profile.html?user=${encodeURIComponent(friend.id)}">View profile</a><a class="small-action message-action" href="chat.html?friend=${encodeURIComponent(friend.id)}" aria-label="Message ${friend.name}">💬 Message</a></div></div></article>`).join('') : '<p class="empty-state">You do not have any friends saved yet.</p>';
 
     if(suggestionsList){
         const currentUser = MeetTogetherDB.getCurrentUser();
         const friendIds = friends.map(friend => friend.id);
-        const eventCreatorIds = MeetTogetherDB.getEvents().map(event => event.creatorId);
-        const suggestions = MeetTogetherDB.getUsers().filter(user => eventCreatorIds.includes(user.id) && user.id !== currentUser.id && !friendIds.includes(user.id));
+        const suggestions = MeetTogetherDB.getUsers().filter(user => user.id !== currentUser.id && !friendIds.includes(user.id));
         suggestionsList.innerHTML = suggestions.length ? suggestions.map(user => `
-            <article class="data-item"><span class="avatar">${user.name.charAt(0)}</span><div><h2>${user.name}</h2><p>${user.email}</p><button class="small-action" type="button" onclick="addFriend('${user.id}')">Add friend</button></div></article>`).join('') : '<p class="empty-state">You are friends with everyone in the demo.</p>';
+            <article class="data-item"><span class="avatar">${user.name.charAt(0)}</span><div><h2>${user.name}</h2><p>${user.email}</p><div class="person-actions"><a class="small-action" href="organizer-profile.html?user=${encodeURIComponent(user.id)}">View profile</a><button class="small-action" type="button" onclick="addFriend('${user.id}')">Add friend</button></div></div></article>`).join('') : '<p class="empty-state">You are friends with everyone in the demo.</p>';
     }
 }
 
@@ -190,17 +250,52 @@ function renderProfile(){
 
 function setupAccountForms(){
     const loginForm = document.getElementById('loginForm');
-    if(loginForm) loginForm.addEventListener('submit', function(event){
+    if(loginForm) loginForm.addEventListener('submit', async function(event){
         event.preventDefault();
-        MeetTogetherDB.login(document.getElementById('loginName').value, document.getElementById('loginEmail').value);
+        const password = document.getElementById('loginPassword').value;
+        const message = document.getElementById('loginMessage');
+        if(password.length < 8){
+            message.textContent = 'Password must be at least 8 characters.';
+            message.classList.add('is-visible');
+            return;
+        }
+        const result = await MeetTogetherDB.login(document.getElementById('loginName').value, document.getElementById('loginEmail').value, password);
+        if(!result.user){
+            message.textContent = 'Email or password is incorrect.';
+            message.classList.add('is-visible');
+            return;
+        }
         const returnPage = new URLSearchParams(window.location.search).get('return');
         window.location.href = returnPage || 'SplashPage.html';
     });
 
     const registerForm = document.getElementById('registerForm');
-    if(registerForm) registerForm.addEventListener('submit', function(event){
+    if(registerForm) registerForm.addEventListener('submit', async function(event){
         event.preventDefault();
-        MeetTogetherDB.login(document.getElementById('registerName').value, document.getElementById('registerEmail').value, document.getElementById('registerPhone').value);
+        const password = document.getElementById('registerPassword').value;
+        const confirmation = document.getElementById('registerPasswordConfirm').value;
+        const message = document.getElementById('registerMessage');
+        if(password.length < 8){
+            message.textContent = 'Password must be at least 8 characters.';
+            message.classList.add('is-visible');
+            return;
+        }
+        if(password !== confirmation){
+            message.textContent = 'Passwords do not match.';
+            message.classList.add('is-visible');
+            return;
+        }
+        const result = await MeetTogetherDB.register(
+            document.getElementById('registerName').value,
+            document.getElementById('registerEmail').value,
+            document.getElementById('registerPhone').value,
+            password
+        );
+        if(!result.user){
+            message.textContent = 'An account with that email already exists.';
+            message.classList.add('is-visible');
+            return;
+        }
         const returnPage = new URLSearchParams(window.location.search).get('return');
         window.location.href = returnPage || 'SplashPage.html';
     });
@@ -218,15 +313,23 @@ function setupAccountForms(){
 
 function loadActivity(){
 
+    const card = document.querySelector('.card');
+    const buttons = document.querySelector('.buttons');
+    if(activities.length && card && !document.getElementById('title')){
+        card.innerHTML = '<div class="card-header"><span id="activityEmoji" class="emoji">☕</span><h2 id="title"></h2></div><p id="description"></p><p id="location"></p><p id="date"></p><p id="organizer" class="event-organizer"></p>';
+    }
+
     if(current >= activities.length){
 
-        document.querySelector(".card").innerHTML =
-        "<h2>🎉 You've seen every activity!</h2>";
+        card.innerHTML =
+        activities.length ? "<h2>🎉 You've seen every activity!</h2>" : "<h2>No activities match your filters.</h2>";
 
-        document.querySelector(".buttons").style.display="none";
+        buttons.style.display="none";
 
         return;
     }
+
+    buttons.style.display = 'flex';
 
     const a = activities[current];
     currentEventId = a.id;
@@ -240,7 +343,7 @@ function loadActivity(){
     document.getElementById('date').textContent = a.date;
     if(organizerEl){
         const organizer = MeetTogetherDB.getUser(a.creatorId);
-        organizerEl.textContent = organizer ? `👤 Organised by ${organizer.name}` : '';
+        organizerEl.innerHTML = organizer ? `👤 Organised by <a class="organiser-link" href="organizer-profile.html?user=${encodeURIComponent(organizer.id)}">${organizer.name}</a>` : '';
     }
     if(getPreferences().speech === true && 'speechSynthesis' in window){
         window.speechSynthesis.cancel();
@@ -337,34 +440,63 @@ function renderOrganizerProfile(){
 
 function renderChatPage(){
     const roomList = document.getElementById('chatRoomList');
+    const myEventChatList = document.getElementById('myEventChatList');
+    const directFriendList = document.getElementById('directFriendList');
     const messages = document.getElementById('chatMessages');
     const form = document.getElementById('chatForm');
-    if(!roomList || !messages || !form) return;
+    const directForm = document.getElementById('directMessageForm');
+    if(!roomList || !myEventChatList || !messages || !form || !directFriendList || !directForm) return;
     if(!requireAccount()) return;
 
     const rooms = MeetTogetherDB.getChatRooms();
+    const myEventRooms = MeetTogetherDB.getMyEventChatRooms();
     const events = MeetTogetherDB.getEvents();
+    const friends = MeetTogetherDB.getFriends();
     const requestedEvent = new URLSearchParams(window.location.search).get('event');
-    let activeRoom = rooms.find(room => room.eventId === requestedEvent) || rooms[0];
+    const requestedFriend = new URLSearchParams(window.location.search).get('friend');
+    let activeRoom = rooms.find(room => room.eventId === requestedEvent) || myEventRooms.find(room => room.eventId === requestedEvent) || rooms[0] || myEventRooms[0];
     let activeEvent = activeRoom && events.find(event => event.id === activeRoom.eventId);
+    let activeFriendId = friends.some(friend => friend.id === requestedFriend) ? requestedFriend : null;
 
     roomList.innerHTML = rooms.length ? rooms.map(room => {
         const event = events.find(item => item.id === room.eventId);
         return `<button class="chat-room-option${activeRoom && activeRoom.id === room.id ? ' selected' : ''}" type="button" data-room-id="${room.id}"><span class="chat-room-emoji">${event ? event.emoji : '💬'}</span><span>${event ? event.title : room.name}</span></button>`;
     }).join('') : '<p class="empty-state">Show interest in an event to join its chat room.</p>';
+    myEventChatList.innerHTML = myEventRooms.length ? myEventRooms.map(room => {
+        const event = events.find(item => item.id === room.eventId);
+        return `<button class="chat-room-option${activeRoom && activeRoom.id === room.id ? ' selected' : ''}" type="button" data-my-event-room-id="${room.id}"><span class="chat-room-emoji">${event ? event.emoji : '💬'}</span><span>${event ? event.title : room.name}</span></button>`;
+    }).join('') : '<p class="empty-state">Create an event to see its chat here.</p>';
+    directFriendList.innerHTML = friends.length ? friends.map(friend =>
+        `<button class="chat-room-option${activeFriendId === friend.id ? ' selected' : ''}" type="button" data-direct-user="${friend.id}"><span class="chat-room-emoji">💬</span><span>${friend.name}</span></button>`
+    ).join('') : '<p class="empty-state">Add a friend to start a direct message.</p>';
 
     function renderMessages(){
+        const meta = document.getElementById('chatRoomMeta');
+        if(activeFriendId){
+            const friend = friends.find(item => item.id === activeFriendId);
+            const directMessages = MeetTogetherDB.getDirectMessages(MeetTogetherDB.getCurrentUser().id, activeFriendId);
+            document.getElementById('chatRoomTitle').textContent = `💬 ${friend.name}`;
+            if(meta) meta.textContent = 'Direct messages';
+            messages.innerHTML = directMessages.length ? directMessages.map(message => {
+                const user = MeetTogetherDB.getUser(message.senderId);
+                return `<article class="chat-message"><strong>${user ? user.name : 'Member'}</strong><p>${message.text}</p></article>`;
+            }).join('') : '<p class="empty-state">No messages yet. Start the conversation.</p>';
+            form.hidden = true;
+            directForm.hidden = false;
+            return;
+        }
         if(activeRoom) activeRoom = MeetTogetherDB.getChatRoom(activeRoom.id);
         messages.innerHTML = activeRoom && activeRoom.messages.length ? activeRoom.messages.map(message => {
             const user = MeetTogetherDB.getUser(message.userId);
             return `<article class="chat-message"><strong>${user ? user.name : 'Member'}</strong><p>${message.text}</p></article>`;
         }).join('') : '<p class="empty-state">No messages yet. Start the conversation.</p>';
-        const meta = document.getElementById('chatRoomMeta');
         if(activeEvent && meta){
             const organizer = MeetTogetherDB.getUser(activeEvent.creatorId);
             document.getElementById('chatRoomTitle').textContent = `${activeEvent.emoji} ${activeEvent.title} chat`;
             meta.innerHTML = organizer ? `<span>Organised by</span> <a href="organizer-profile.html?user=${encodeURIComponent(organizer.id)}" class="organiser-link">👤 ${organizer.name}</a>` : '';
         }
+        form.hidden = false;
+        directForm.hidden = true;
     }
 
     roomList.addEventListener('click', function(event){
@@ -372,7 +504,32 @@ function renderChatPage(){
         if(!button) return;
         activeRoom = MeetTogetherDB.getChatRoom(button.dataset.roomId);
         activeEvent = events.find(item => item.id === activeRoom.eventId);
+        activeFriendId = null;
+        directFriendList.querySelectorAll('.chat-room-option').forEach(item => item.classList.remove('selected'));
+        myEventChatList.querySelectorAll('.chat-room-option').forEach(item => item.classList.remove('selected'));
         roomList.querySelectorAll('.chat-room-option').forEach(item => item.classList.toggle('selected', item === button));
+        renderMessages();
+    });
+
+    myEventChatList.addEventListener('click', function(event){
+        const button = event.target.closest('[data-my-event-room-id]');
+        if(!button) return;
+        activeRoom = MeetTogetherDB.getChatRoom(button.dataset.myEventRoomId);
+        activeEvent = events.find(item => item.id === activeRoom.eventId);
+        activeFriendId = null;
+        directFriendList.querySelectorAll('.chat-room-option').forEach(item => item.classList.remove('selected'));
+        roomList.querySelectorAll('.chat-room-option').forEach(item => item.classList.remove('selected'));
+        myEventChatList.querySelectorAll('.chat-room-option').forEach(item => item.classList.toggle('selected', item === button));
+        renderMessages();
+    });
+
+    directFriendList.addEventListener('click', function(event){
+        const button = event.target.closest('[data-direct-user]');
+        if(!button) return;
+        activeFriendId = button.dataset.directUser;
+        directFriendList.querySelectorAll('.chat-room-option').forEach(item => item.classList.toggle('selected', item === button));
+        roomList.querySelectorAll('.chat-room-option').forEach(item => item.classList.remove('selected'));
+        myEventChatList.querySelectorAll('.chat-room-option').forEach(item => item.classList.remove('selected'));
         renderMessages();
     });
 
@@ -381,6 +538,15 @@ function renderChatPage(){
         const input = document.getElementById('chatMessageInput');
         if(activeRoom && input.value.trim()){
             MeetTogetherDB.sendChatMessage(activeRoom.id, input.value);
+            input.value = '';
+            renderMessages();
+        }
+    });
+    directForm.addEventListener('submit', function(event){
+        event.preventDefault();
+        const input = document.getElementById('directMessageInput');
+        if(activeFriendId && input.value.trim()){
+            MeetTogetherDB.sendDirectMessage(activeFriendId, input.value);
             input.value = '';
             renderMessages();
         }
@@ -438,17 +604,20 @@ function setupEventEditMode(){
     if(!form) return;
     const eventId = new URLSearchParams(window.location.search).get('edit');
     if(!eventId) return;
-    const event = MeetTogetherDB.getEvents().find(item => item.id === eventId && item.creatorId === MeetTogetherDB.getCurrentUser().id);
+    const currentUser = MeetTogetherDB.getCurrentUser();
+    const event = MeetTogetherDB.getEvents().find(item => currentUser && item.id === eventId && item.creatorId === currentUser.id);
     if(!event) return;
 
-    document.getElementById('eventFormHeading').textContent = 'Edit Event';
-    document.getElementById('eventFormSubtitle').textContent = 'Update your activity details';
-    document.getElementById('eventSubmitButton').textContent = 'Save Changes';
+    const heading = document.getElementById('eventFormHeading');
+    const subtitle = document.getElementById('eventFormSubtitle');
+    const submit = document.getElementById('eventSubmitButton');
+    if(heading) heading.textContent = 'Edit Event';
+    if(subtitle) subtitle.textContent = 'Update your activity details';
+    if(submit) submit.textContent = 'Save Changes';
     document.getElementById('eventTitle').value = event.title;
     document.getElementById('eventDescription').value = event.description;
     document.getElementById('eventLocation').value = event.location;
     document.getElementById('eventEmoji').value = event.emoji || '';
-
     let dateValue = event.dateValue || '';
     let timeValue = event.timeValue || '';
     if(!dateValue && event.date){
@@ -521,6 +690,8 @@ window.onload = function(){
     setupPageTransitions();
     setupHomeMenu();
     setupChatMenuLink();
+    setupAuthenticationVisibility();
+    setupLogoutLink();
     setupInterestDialog();
     renderOrganizerProfile();
     renderSavedEvents();
@@ -541,6 +712,7 @@ window.onload = function(){
 
     if(activityImageEl){
         activities = MeetTogetherDB.getEvents();
+        setupEventFilters();
         loadActivity();
     }
 
