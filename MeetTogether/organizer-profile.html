@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organiser Profile - Together Nearby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container page-shell">
+    <header class="topbar"><div class="brand">Together Nearby</div><nav class="home-menu-wrap"><button class="home-menu-button" type="button" aria-expanded="false" aria-controls="homeMenu"><span aria-hidden="true">⌂</span> Home menu</button><div class="home-menu" id="homeMenu"><a href="SplashPage.html">Home</a><a href="settings.html">Settings</a><a href="friends.html">Friends</a><a href="profile.html">Profile</a><a href="favourites.html">Favourites</a><a href="login.html">Log in</a></div></nav></header>
+    <main class="simple-page narrow-page organiser-page">
+        <p><a class="back-link" href="chat.html">Back to chat rooms</a></p>
+        <div class="organiser-heading"><span id="organiserAvatar" class="avatar">?</span><div><h1 id="organiserName">Organiser profile</h1><p id="organiserEmail" class="subtitle"></p></div></div>
+        <h2 class="section-heading">Events they created</h2>
+        <section id="organiserEvents" class="data-list"></section>
+        <h2 class="section-heading">Reviews</h2>
+        <section id="organiserReviews" class="data-list"></section>
+        <form id="reviewForm" class="simple-form review-form">
+            <h2>Leave a review</h2>
+            <label for="reviewRating">Rating</label>
+            <select id="reviewRating" required><option value="">Choose a rating</option><option value="5">5 - Excellent</option><option value="4">4 - Very good</option><option value="3">3 - Good</option><option value="2">2 - Fair</option><option value="1">1 - Needs improvement</option></select>
+            <label for="reviewText">Your review</label>
+            <textarea id="reviewText" rows="4" maxlength="500" required></textarea>
+            <button class="add-btn" type="submit">Post review</button>
+            <p id="reviewMessage" class="add-message" aria-live="polite"></p>
+        </form>
+    </main>
+</div>
+<script src="database.js"></script><script src="script.js"></script>
+</body>
+</html>

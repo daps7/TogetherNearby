@@ -24,8 +24,8 @@
             </div>
         </nav>
     </header>
-    <h1>Add Event</h1>
-    <p class="subtitle">Create a new activity for others to join</p>
+    <h1 id="eventFormHeading">Add Event</h1>
+    <p id="eventFormSubtitle" class="subtitle">Create a new activity for others to join</p>
 
     <main style="max-width:600px;margin:20px auto;text-align:left;">
         <form id="addEventForm" novalidate>
@@ -61,6 +61,7 @@
                     <button type="button" class="emoji-option" data-emoji="🎲">🎲</button>
                     <button type="button" class="emoji-option" data-emoji="🧑‍🍳">🧑‍🍳</button>
                     <button type="button" class="emoji-option" data-emoji="🎵">🎵</button>
+                    <button type="button" class="emoji-option" data-emoji="💃">💃</button>
                     <button type="button" class="emoji-option" data-emoji="⚽">⚽</button>
                     <button type="button" class="emoji-option" data-emoji="🎾">🎾</button>
                     <button type="button" class="emoji-option" data-emoji="🏀">🏀</button>
@@ -76,7 +77,7 @@
                     <button type="button" class="emoji-clear">Clear</button>
                 </div>
 
-            <button class="add-btn" type="submit">Save and Return</button>
+            <button id="eventSubmitButton" class="add-btn" type="submit">Save and Return</button>
         </form>
 
         <p id="addMessage" class="add-message" aria-live="polite"></p>

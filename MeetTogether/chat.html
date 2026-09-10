@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Rooms - Together Nearby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container page-shell">
+    <header class="topbar"><div class="brand">Together Nearby</div><nav class="home-menu-wrap"><button class="home-menu-button" type="button" aria-expanded="false" aria-controls="homeMenu"><span aria-hidden="true">⌂</span> Home menu</button><div class="home-menu" id="homeMenu"><a href="SplashPage.html">Home</a><a href="settings.html">Settings</a><a href="friends.html">Friends</a><a href="profile.html">Profile</a><a href="favourites.html">Favourites</a><a href="login.html">Log in</a></div></nav></header>
+    <main class="simple-page chat-page">
+        <h1>Chat rooms</h1>
+        <p class="subtitle">Talk with people interested in the same events.</p>
+        <div class="chat-layout">
+            <aside class="chat-rooms-panel"><h2>Your rooms</h2><section id="chatRoomList" class="chat-room-list" aria-label="Your chat rooms"></section></aside>
+            <section class="chat-window" aria-live="polite">
+                <h2 id="chatRoomTitle">Choose a chat room</h2>
+                <div id="chatRoomMeta" class="chat-room-meta"></div>
+                <div id="chatMessages" class="chat-messages"></div>
+                <form id="chatForm" class="chat-form">
+                    <label class="visually-hidden" for="chatMessageInput">Message</label>
+                    <input id="chatMessageInput" type="text" placeholder="Write a message..." autocomplete="off" maxlength="500" required>
+                    <button class="add-btn" type="submit">Send</button>
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
+<script src="database.js"></script><script src="script.js"></script>
+</body>
+</html>
