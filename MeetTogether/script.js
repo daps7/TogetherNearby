@@ -248,14 +248,48 @@ function renderProfile(){
     if(email) email.value = user.email;
 }
 
+function showFieldError(field, message){
+    const error = document.getElementById(`${field.id}Error`);
+    const invalid = !field.value.trim() || (field.type === 'email' && !field.validity.valid);
+    field.classList.toggle('field-invalid', invalid);
+    field.setAttribute('aria-invalid', String(invalid));
+    if(error && message) error.textContent = message;
+    if(error) error.classList.toggle('is-visible', invalid);
+    return !invalid;
+}
+
+function setupStarRating(){
+    const picker = document.getElementById('reviewRating');
+    const value = document.getElementById('reviewRatingValue');
+    if(!picker || !value) return;
+    picker.addEventListener('click', function(event){
+        const button = event.target.closest('[data-rating]');
+        if(!button) return;
+        value.value = button.dataset.rating;
+        picker.querySelectorAll('.star-option').forEach(star => {
+            const selected = Number(star.dataset.rating) <= Number(value.value);
+            star.textContent = selected ? '★' : '☆';
+            star.setAttribute('aria-checked', String(star === button));
+        });
+        document.getElementById('reviewRatingError').classList.remove('is-visible');
+    });
+}
+
 function setupAccountForms(){
     const loginForm = document.getElementById('loginForm');
     if(loginForm) loginForm.addEventListener('submit', async function(event){
         event.preventDefault();
+        const name = document.getElementById('loginName');
+        const email = document.getElementById('loginEmail');
         const password = document.getElementById('loginPassword').value;
         const message = document.getElementById('loginMessage');
-        if(password.length < 8){
-            message.textContent = 'Password must be at least 8 characters.';
+        const fieldsValid = showFieldError(name, 'Enter your name.') && showFieldError(email, 'Enter a valid email address.');
+        if(!fieldsValid){
+            if(password.length < 8){
+                document.getElementById('loginPasswordError').classList.add('is-visible');
+                message.textContent = 'Password must be at least 8 characters.';
+            }
+            else message.textContent = 'Complete the highlighted fields.';
             message.classList.add('is-visible');
             return;
         }
@@ -272,23 +306,34 @@ function setupAccountForms(){
     const registerForm = document.getElementById('registerForm');
     if(registerForm) registerForm.addEventListener('submit', async function(event){
         event.preventDefault();
+        const name = document.getElementById('registerName');
+        const email = document.getElementById('registerEmail');
+        const phone = document.getElementById('registerPhone');
         const password = document.getElementById('registerPassword').value;
         const confirmation = document.getElementById('registerPasswordConfirm').value;
         const message = document.getElementById('registerMessage');
-        if(password.length < 8){
-            message.textContent = 'Password must be at least 8 characters.';
+        const fieldsValid = [
+            showFieldError(name, 'Enter your name.'),
+            showFieldError(email, 'Enter a valid email address.'),
+            showFieldError(phone, 'Enter your phone number.')
+        ].every(Boolean);
+        if(!fieldsValid || password.length < 8){
+            document.getElementById('registerPasswordError').classList.toggle('is-visible', password.length < 8);
+            message.textContent = !fieldsValid ? 'Complete the highlighted fields.' : 'Password must be at least 8 characters.';
             message.classList.add('is-visible');
             return;
         }
         if(password !== confirmation){
+            document.getElementById('registerPasswordConfirm').classList.add('field-invalid');
+            document.getElementById('registerPasswordConfirmError').classList.add('is-visible');
             message.textContent = 'Passwords do not match.';
             message.classList.add('is-visible');
             return;
         }
         const result = await MeetTogetherDB.register(
-            document.getElementById('registerName').value,
-            document.getElementById('registerEmail').value,
-            document.getElementById('registerPhone').value,
+            name.value,
+            email.value,
+            phone.value,
             password
         );
         if(!result.user){
@@ -301,13 +346,34 @@ function setupAccountForms(){
     });
 
     const profileForm = document.getElementById('profileForm');
-    if(profileForm) profileForm.addEventListener('submit', function(event){
+    if(profileForm) profileForm.addEventListener('submit', async function(event){
         event.preventDefault();
-        MeetTogetherDB.updateProfile({
-            name: document.getElementById('profileName').value,
-            email: document.getElementById('profileEmail').value
+        const name = document.getElementById('profileName');
+        const email = document.getElementById('profileEmail');
+        const password = document.getElementById('profilePassword');
+        const message = document.getElementById('profileMessage');
+        const fieldsValid = [
+            showFieldError(name, 'Enter your name.'),
+            showFieldError(email, 'Enter a valid email address.'),
+            showFieldError(password, 'Enter your current password.')
+        ].every(Boolean);
+        if(!fieldsValid){
+            message.textContent = 'Complete the highlighted fields.';
+            return;
+        }
+        const result = await MeetTogetherDB.updateProfile({
+            name: name.value,
+            email: email.value,
+            currentPassword: password.value
         });
-        document.getElementById('profileMessage').textContent = 'Your profile has been saved.';
+        if(result.user){
+            message.textContent = 'Your profile has been saved.';
+        }else if(result.error === 'email-in-use'){
+            message.textContent = 'That email is already in use.';
+        }else{
+            password.classList.add('field-invalid');
+            message.textContent = 'Current password is incorrect.';
+        }
     });
 }
 
@@ -427,14 +493,21 @@ function renderOrganizerProfile(){
 
     form.addEventListener('submit', function(event){
         event.preventDefault();
-        const rating = document.getElementById('reviewRating');
+        const rating = document.getElementById('reviewRatingValue');
         const text = document.getElementById('reviewText');
+        const ratingError = document.getElementById('reviewRatingError');
+        const textValid = showFieldError(text, 'Enter a review.');
+        const ratingValid = Boolean(rating.value);
+        ratingError.classList.toggle('is-visible', !ratingValid);
+        if(!textValid || !ratingValid) return;
         MeetTogetherDB.addReview(user.id, rating.value, text.value);
         text.value = '';
         rating.value = '';
+        document.querySelectorAll('.star-option').forEach(star => { star.textContent = '☆'; star.setAttribute('aria-checked', 'false'); });
         document.getElementById('reviewMessage').textContent = 'Your review has been posted.';
         renderReviews();
     });
+    setupStarRating();
     renderReviews();
 }
 

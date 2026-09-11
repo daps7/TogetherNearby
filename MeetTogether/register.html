@@ -28,14 +28,19 @@
         <form id="registerForm" class="simple-form">
             <label for="registerName">Your name</label>
             <input id="registerName" type="text" autocomplete="name" required>
+            <p class="field-error" id="registerNameError">Enter your name.</p>
             <label for="registerEmail">Email address</label>
             <input id="registerEmail" type="email" autocomplete="email" required>
+            <p class="field-error" id="registerEmailError">Enter a valid email address.</p>
             <label for="registerPhone">Phone number</label>
             <input id="registerPhone" type="tel" autocomplete="tel" required>
+            <p class="field-error" id="registerPhoneError">Enter your phone number.</p>
             <label for="registerPassword">Password</label>
             <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>
+            <p class="field-error" id="registerPasswordError">Password must be at least 8 characters.</p>
             <label for="registerPasswordConfirm">Confirm password</label>
             <input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+            <p class="field-error" id="registerPasswordConfirmError">Confirm your password.</p>
             <p id="registerMessage" class="field-error" aria-live="polite"></p>
             <button class="add-btn" type="submit">Create account</button>
         </form>

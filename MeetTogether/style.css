@@ -116,6 +116,9 @@ form input.field-invalid, form textarea.field-invalid, form select.field-invalid
 .emoji-option{background:transparent;border:1px solid rgba(44,62,80,0.16);padding:8px 10px;border-radius:8px;font-size:20px;cursor:pointer}
 .emoji-option.selected{background:var(--hover);border-color:var(--gold)}
 .emoji-clear{background:transparent;border:1px dashed rgba(44,62,80,0.2);padding:6px 10px;border-radius:8px;cursor:pointer}
+.star-rating{display:flex;gap:4px;margin-top:8px}
+.star-option{padding:2px 5px;background:transparent;color:var(--gold);font-size:32px;line-height:1;border-radius:6px}
+.star-option:hover,.star-option:focus{background:var(--hover);outline:2px solid var(--gold)}
 
 .add-message{margin-top:10px;color:var(--accent);min-height:20px}
 

@@ -220,16 +220,20 @@ const MeetTogetherDB = (() => {
         return { user: publicUser(user), error: null };
     }
 
-    function updateProfile(profileDetails) {
+    async function updateProfile(profileDetails) {
         const data = read();
         const user = data.users.find(item => item.id === data.currentUserId);
-        if (user) {
-            user.name = profileDetails.name.trim() || user.name;
-            user.email = profileDetails.email.trim().toLowerCase() || user.email;
-            user.phone = profileDetails.phone ? profileDetails.phone.trim() : user.phone || '';
-            write(data);
-        }
-        return publicUser(user);
+        if (!user || !profileDetails.currentPassword) return { user: null, error: 'password-required' };
+        const passwordHash = await hashPassword(profileDetails.currentPassword);
+        if (!user.passwordHash || user.passwordHash !== passwordHash) return { user: null, error: 'invalid-password' };
+        const normalizedEmail = profileDetails.email.trim().toLowerCase();
+        const emailInUse = data.users.some(item => item.id !== user.id && item.email.toLowerCase() === normalizedEmail);
+        if (emailInUse) return { user: null, error: 'email-in-use' };
+        user.name = profileDetails.name.trim();
+        user.email = normalizedEmail;
+        user.phone = profileDetails.phone ? profileDetails.phone.trim() : user.phone || '';
+        write(data);
+        return { user: publicUser(user), error: null };
     }
 
     function setPremium(enabled) {

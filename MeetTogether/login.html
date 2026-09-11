@@ -23,10 +23,13 @@
         <form id="loginForm" class="simple-form">
             <label for="loginName">Your name</label>
             <input id="loginName" type="text" autocomplete="name" required>
+            <p class="field-error" id="loginNameError">Enter your name.</p>
             <label for="loginEmail">Email address</label>
             <input id="loginEmail" type="email" autocomplete="email" required>
+            <p class="field-error" id="loginEmailError">Enter a valid email address.</p>
             <label for="loginPassword">Password</label>
             <input id="loginPassword" type="password" autocomplete="current-password" minlength="8" required>
+            <p class="field-error" id="loginPasswordError">Password must be at least 8 characters.</p>
             <p id="loginMessage" class="field-error" aria-live="polite"></p>
             <button class="add-btn" type="submit">Log in</button>
         </form>

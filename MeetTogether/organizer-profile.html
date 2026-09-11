@@ -18,10 +18,15 @@
         <section id="organiserReviews" class="data-list"></section>
         <form id="reviewForm" class="simple-form review-form">
             <h2>Leave a review</h2>
-            <label for="reviewRating">Rating</label>
-            <select id="reviewRating" required><option value="">Choose a rating</option><option value="5">5 - Excellent</option><option value="4">4 - Very good</option><option value="3">3 - Good</option><option value="2">2 - Fair</option><option value="1">1 - Needs improvement</option></select>
+            <label id="reviewRatingLabel">Rating</label>
+            <div id="reviewRating" class="star-rating" role="radiogroup" aria-labelledby="reviewRatingLabel">
+                <button type="button" class="star-option" data-rating="1" role="radio" aria-label="1 star">☆</button><button type="button" class="star-option" data-rating="2" role="radio" aria-label="2 stars">☆</button><button type="button" class="star-option" data-rating="3" role="radio" aria-label="3 stars">☆</button><button type="button" class="star-option" data-rating="4" role="radio" aria-label="4 stars">☆</button><button type="button" class="star-option" data-rating="5" role="radio" aria-label="5 stars">☆</button>
+            </div>
+            <input id="reviewRatingValue" type="hidden" value="">
+            <p class="field-error" id="reviewRatingError">Choose a star rating.</p>
             <label for="reviewText">Your review</label>
             <textarea id="reviewText" rows="4" maxlength="500" required></textarea>
+            <p class="field-error" id="reviewTextError">Enter a review.</p>
             <button class="add-btn" type="submit">Post review</button>
             <p id="reviewMessage" class="add-message" aria-live="polite"></p>
         </form>
